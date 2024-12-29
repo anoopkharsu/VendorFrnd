@@ -8,87 +8,82 @@
 import SwiftUI
 
 struct LoginScreenView: View {
-    @State var tt = ""
-    @ObservedObject var model = LoginViewModel()
+    @StateObject private var viewModel = LoginViewModel()
     
     var body: some View {
+        VStack(spacing: 0) {
+            NavigationView {
+                VStack(spacing: 0) {
+                    headerView
+                    contentView
+                    NavigationLink(
+                        destination: OTPVerificationScreenView(phoneNumber: viewModel.loginModel.countryCode + viewModel.loginModel.phoneNumber),
+                        isActive: $viewModel.navigateToOTPVerification
+                    ) {
+                        EmptyView()
+                    }
+                }
+                .navigationBarHidden(true)
+            }
+        }
+        .loading(isLoading: self.viewModel.screenState == .showActivityIndicator)
+        .toast(isPresented: $viewModel.presentToast, message: viewModel.loginModel.error)
+    }
+    
+    // MARK: - Header View
+    
+    private var headerView: some View {
         VStack {
-            VStack {
-                HStack {
-                    Text("Shop Corner")
-                        .font(.system(size: 26,weight: .heavy))
-                        .foregroundStyle(.white)
-                    Spacer()
-                }
+            HStack {
+                Text("app.title".localized)
+                    .font(.system(size: 26, weight: .heavy))
+                    .foregroundColor(.white)
                 Spacer()
-                HStack {
-                    Text("Sign in")
-                        .font(.system(size: 16,weight: .heavy))
-                        .foregroundStyle(.white)
-                    Spacer()
-                }
             }
-            .padding()
-            .background(.blue)
-            
-            VStack {
-                FloatingLabelTextField(
-                    text: $model.loginModel.phoneNumber,
-                    title: "Phone Number",
-                    placeholder: "Enter your phone number"
-                )
-            }
-            .padding()
-        }
-        .toast(message: model.loginModel.error)
-        
-    }
-}
-
-struct FloatingLabelTextField: View {
-    @State private var isFocused: Bool = false
-    @Binding var text: String
-    
-    var title: String
-    var placeholder: String
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            // Title that floats to the top
-            Text(title)
-                .font(.system(size: 14))
-
-            // TextField with a placeholder
-            TextField(placeholder, text: $text, onEditingChanged: { focused in
-                isFocused = focused
-            })
-            .padding(12)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(isFocused ? Color.accentColor : Color.gray, lineWidth: 1)
-            )
             Spacer()
-                .frame(height: 16)
-            
-            Button {
-                
-            } label: {
-                Spacer()
-                Text("Send OTP")
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.white)
+            HStack {
+                Text("login.sign.in".localized)
+                    .font(.system(size: 16, weight: .heavy))
+                    .foregroundColor(.white)
                 Spacer()
             }
-            .padding()
-            .background(.green)
-            .clipShape(.rect(cornerRadius: 8))
-            
         }
-        .padding(.vertical, 8)
+        .padding()
+        .background(Color.blue)
+    }
+    
+    // MARK: - Content View
+    
+    private var contentView: some View {
+        VStack(spacing: 16) {
+            PhoneNumberInputView(selectedCountryCode: $viewModel.loginModel.countryCode, phoneNumber: $viewModel.loginModel.phoneNumber)
+            GreenButton(title: "button.send.otp".localized) {
+                viewModel.getOtp()
+            }
+        }
+        .padding()
+    }
+}
+
+struct GreenButton: View {
+    var title: String
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .fontWeight(.semibold)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.green)
+                .cornerRadius(8)
+        }
     }
 }
 
 
-#Preview {
-    LoginScreenView()
-}
+//
+//#Preview {
+//    LoginScreenView()
+//}

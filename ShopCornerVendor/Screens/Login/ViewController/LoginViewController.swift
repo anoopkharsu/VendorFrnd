@@ -7,11 +7,19 @@
 
 import UIKit
 import SwiftUI
+import FirebaseAuth
 
 class LoginViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let _ = Auth.auth().addStateDidChangeListener {[weak self] _, user in
+            if user != nil {
+                self?.goToHomePage()
+            }
+        }
+        
         let loginView = LoginScreenView()
         let hostingController = UIHostingController(rootView: loginView)
         
@@ -31,6 +39,20 @@ class LoginViewController: UIViewController {
         
         // Notify the hostingController that it was added
         hostingController.didMove(toParent: self)
+    }
+    
+    func goToHomePage() {
+        guard let window = SceneDelegate.shared?.window else { return }
+        
+        let tabBar = SCTabBarController()
+        let navigation = UINavigationController(rootViewController: tabBar)
+        
+        
+        
+        
+        UIView.transition(with: window, duration: 0.5, options: .curveEaseInOut, animations: {
+            window.rootViewController = navigation
+        }, completion: nil)
     }
 
 }

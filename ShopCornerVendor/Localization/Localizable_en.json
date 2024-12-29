@@ -1,0 +1,18 @@
+
+{
+    "login.sign.in": "Sign In",
+    "login.phone.number": "Phone Number",
+    "login.enter.phone": "Enter your phone number",
+    "button.send.otp": "Send OTP",
+    "app.title": "Shop Corner",
+    "error.phone.required": "Phone number is required",
+    "success.otp.sent": "OTP sent successfully",
+    "otp.verify": "Verify OTP",
+    "otp.sent.to": "An OTP has been sent to",
+    "otp.enter.code": "Enter OTP",
+    "button.verify": "Verify",
+    "otp.verification.title": "OTP Verification",
+    "error.otp.required": "OTP code is required",
+    "success.login": "Logged in successfully"
+    
+}

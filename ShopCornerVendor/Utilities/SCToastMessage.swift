@@ -8,44 +8,50 @@
 import SwiftUI
 
 struct ToastModifier: ViewModifier {
-    var isPresented: Bool {
-        message != nil
-    }
+    @Binding var isPresented: Bool
     let message: SCToastMessage?
+    let interval: TimeInterval
     
     func body(content: Content) -> some View {
-        content
-            .overlay(
+        ZStack {
+            content
+            if isPresented && message != nil {
                 VStack {
-                    if isPresented {
-                        HStack {
-                            Text(message!.message)
-                                .font(.subheadline)
-                                .foregroundColor(.white)
-                            
-                            Spacer()
+                    HStack {
+                        Text(message!.message)
+                            .font(.subheadline)
+                            .foregroundColor(.white)
+                        
+                        Spacer()
+                    }
+                    .padding()
+                    .background(message!.type.backgroundColor)
+                    .cornerRadius(8)
+                    .shadow(radius: 4)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .padding(.top, 20) // Adjusts the toast position
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + interval) {
+                            isPresented = false
                         }
-                        .padding()
-                        .background(message!.type.backgroundColor)
-                        .cornerRadius(8)
-                        .shadow(radius: 4)
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                        .padding(.top, 20) // Adjusts the toast position
+                        
                     }
                     Spacer()
                 }
-                    .padding(.horizontal)
+                .padding(.horizontal)
                 .animation(.easeInOut, value: isPresented)
-            
-            )
+            }
+        }
     }
 }
 
 extension View {
     func toast(
-        message: SCToastMessage?
+        isPresented: Binding<Bool>,
+        message: SCToastMessage?,
+        interval: TimeInterval = 2
     ) -> some View {
-        self.modifier(ToastModifier( message: message))
+        self.modifier(ToastModifier( isPresented: isPresented, message: message, interval: interval))
     }
 }
 

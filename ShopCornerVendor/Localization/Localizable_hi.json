@@ -1,0 +1,17 @@
+
+{
+    "login.sign.in": "साइन इन",
+    "login.phone.number": "फ़ोन नंबर",
+    "login.enter.phone": "अपना फ़ोन नंबर दर्ज करें",
+    "button.send.otp": "ओटीपी भेजें",
+    "app.title": "शॉप कॉर्नर",
+    "error.phone.required": "फ़ोन नंबर आवश्यक है",
+    "success.otp.sent": "ओटीपी सफलतापूर्वक भेजा गया",
+    "otp.verify": "ओटीपी सत्यापित करें",
+    "otp.sent.to": "ओटीपी भेजा गया है",
+    "otp.enter.code": "ओटीपी दर्ज करें",
+    "button.verify": "सत्यापित करें",
+    "otp.verification.title": "ओटीपी सत्यापन",
+    "error.otp.required": "ओटीपी कोड आवश्यक है",
+    "success.login": "सफलतापूर्वक लॉग इन किया गया"
+}
