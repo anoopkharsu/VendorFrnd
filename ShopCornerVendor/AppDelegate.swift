@@ -7,14 +7,48 @@
 
 import UIKit
 import FirebaseCore
+import FirebaseMessaging
+import GoogleMaps
+import UserNotifications
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUserNotificationCenterDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-//        FirebaseApp.configure()
+        FirebaseApp.configure()
+        GMSServices.provideAPIKey("AIzaSyBlAuOLMvt_Mv2efLiBpf1fCqDis8TP3yM")
+        
+        Messaging.messaging().delegate = self
+        UNUserNotificationCenter.current().delegate = self
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert,.badge,.sound]) { _, _ in
+        }
+        
+        application.registerForRemoteNotifications()
+        NotificationManager.shared.processAllPendingNotificationsEvents()
+        
         return true
+    }
+    
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        Messaging.messaging().setAPNSToken(deviceToken, type: .unknown)
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+        
+        let userInfo = notification.request.content.userInfo
+        
+        NotificationManager.shared.processNotificationContentInForeground(userInfo)
+        
+        return .banner
+    }
+    
+    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+        
+        if let fcmToken {
+            SCVendorController.shared.saveFCMToken(fcmToken)
+        }
+       
     }
 
     // MARK: UISceneSession Lifecycle
@@ -33,4 +67,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
 }
+
 

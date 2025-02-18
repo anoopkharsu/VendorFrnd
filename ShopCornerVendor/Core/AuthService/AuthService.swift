@@ -5,40 +5,59 @@
 //  Created by Anoop Kharsu on 02/12/24.
 //
 
-import FirebaseAuth
+import Foundation
+import Combine
 
-class AuthService {
-    static let authVerificationIDKey = "authVerificationID"
-    static let venderKey = "vendor"
+class AuthService: ObservableObject {
+    @Published var vendor: SCVendor?
+    @Published var authToken: String?
     
+    static let venderKey = "vendor"
+    static let authToken = "authToken"
     static let shared = AuthService()
-    var phoneNumber: String? { Auth.auth().currentUser?.phoneNumber }
+    
+    
+    init() {
+        authToken = UserDefaults.standard.string(forKey: AuthService.authToken)
+        vendor = getVendor()
+    }
+    
+   
+    var phoneNumber: String? {
+        if getVendor() == nil {
+            return nil
+        }
+        return getVendor().phone_number
+    }
     var isUserLoggedIn: Bool {
-        //        try? Auth.auth().signOut()
-        return Auth.auth().currentUser != nil
+        return phoneNumber != nil
     }
     
     func getOTP(number: String, callback: @escaping (Error?) -> Void) {
-        PhoneAuthProvider.provider()
-            .verifyPhoneNumber(number) { verificationID, error in
-                if let verificationID {
-                    UserDefaults.standard.set(verificationID, forKey: AuthService.authVerificationIDKey)
-                    callback(nil)
-                } else {
-                    callback(error)
-                }
-            }
+        SCNetwork.shared.requestData(.getOTP(phoneNumber: number)) {(res: EmptyResponse?, error: Error?) in
+            callback(error)
+        }
     }
     
-    func verifyOTP(otpCode: String, callback: @escaping (Error?) -> Void) {
-        guard let verificationID = UserDefaults.standard.string(forKey: AuthService.authVerificationIDKey) else {
-            callback(SCError(localizedDescription: "Please Resend OTP"))
-            return
-        }
-        
-        let creds = PhoneAuthProvider.provider().credential(withVerificationID: verificationID, verificationCode: otpCode)
-        Auth.auth().signIn(with: creds){ _, error in
-            callback(error)
+    func verifyOTP(number: String, otpCode: String, callback: @escaping (Error?) -> Void) {
+        SCNetwork.shared.requestData(.verfiyOTP(phoneNumber: number, otp: otpCode)) {[weak self](res: OTPVerificationResponse?, error: Error?) in
+            if let res {
+                let vendor = res.vendor
+                self?.authToken = res.token
+                self?.vendor = vendor
+                
+                let dict = try? vendor.toDictionary()
+                UserDefaults.standard.set(res.token, forKey: AuthService.authToken)
+                UserDefaults.standard.set(dict, forKey: AuthService.venderKey)
+                callback(nil)
+            } else {
+                if let error {
+                    callback(error)
+                } else {
+                    callback(SCError(localizedDescription: "Something went wrong"))
+                }
+                
+            }
         }
     }
     
@@ -74,10 +93,13 @@ class AuthService {
                 }
             })
         }
-//        let dict = try? vendor.toDictionary()
-//        UserDefaults.standard.set(dict, forKey: AuthService.venderKey)
+    }
+    struct OTPVerificationResponse: Codable {
+        let token: String
+        let vendor: SCVendor
     }
 }
+
 
 struct SCError: Error {
     var localizedDescription: String

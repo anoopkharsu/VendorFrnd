@@ -12,28 +12,22 @@ struct LoadingIndicater: ViewModifier {
     let isLoading: Bool
     
     func body(content: Content) -> some View {
-        ZStack {
-            content
-            if isLoading {
-                VStack {
-                    Spacer()
-                    HStack {
+        content
+            .opacity( isLoading ? 0 : 1)
+            .overlay {
+                if isLoading {
+                    VStack {
                         Spacer()
-                        
-                        ZStack {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle())
-                                .scaleEffect(2)
-                            
+                        HStack {
+                            Spacer()
                         }
-                        
+                        LottieView(animationName: "Shimmer")
+                            .frame(width: 100,height: 100)
                         Spacer()
                     }
-                    Spacer()
+                    .background(.white)
                 }
-                .background(.gray.opacity(0.2))
             }
-        }
     }
 }
 
@@ -43,3 +37,34 @@ extension View {
     }
 }
 
+struct Shimmer: View {
+    @State private var phase: CGFloat = -1
+    
+    var body: some View {
+        
+        GeometryReader { geometry in
+            // Define a gradient with a bright band in the middle.
+            
+            let gradient = LinearGradient(
+                gradient: Gradient(colors: [
+                    Color.white.opacity(0.0),
+                    Color.white.opacity(0.2),
+                    Color.white.opacity(0.0)
+                ]),
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+            // The moving rectangle uses the gradient and is rotated slightly.
+            Rectangle()
+            
+                .fill(gradient)
+                .offset(x: phase * geometry.size.width)
+        }
+        .background(.gray.opacity(0.5))
+        .onAppear {
+            withAnimation(Animation.easeInOut(duration: 1).repeatForever(autoreverses: false)) {
+                phase = 1
+            }
+        }
+    }
+}
